@@ -1,6 +1,7 @@
-import express from 'express';
+import express, { NextFunction, Response, Request } from 'express';
 import cors from 'cors';
 import routes from './routes';
+import AppError from '@shared/errors/error';
 
 const app = express();
 
@@ -9,6 +10,26 @@ app.use(express.json());
 
 app.use(routes);
 
-app.listen(3333, () => {
-  console.log('Servidor rodando na porta http://localhost:3333 ');
+app.use(
+  (
+    error: Error,
+    request: Request,
+    response: Response,
+    next: NextFunction,
+  ) => {
+    if (error instanceof AppError) {
+      return response.status(error.statusCode).json({
+        status: 'error',
+        message: error.message,
+      })
+    }
+    return response.status(500).json({
+      status: 'error',
+      message: 'Internal server error',
+    })
+  },
+);
+
+app.listen(9999, () => {
+  console.log('Servidor rodando na porta http://localhost:9999 ');
 });
